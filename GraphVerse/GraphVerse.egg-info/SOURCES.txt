@@ -1,7 +1,0 @@
-README.md
-setup.py
-GraphVerse.egg-info/PKG-INFO
-GraphVerse.egg-info/SOURCES.txt
-GraphVerse.egg-info/dependency_links.txt
-GraphVerse.egg-info/requires.txt
-GraphVerse.egg-info/top_level.txt
