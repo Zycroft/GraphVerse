@@ -1,6 +1,6 @@
 import random
 from ..graph.rules import check_rule_compliance
-from .generation import generate_walk
+from .token_generation import seed_walk
 
 def evaluate_model(model, graph, vocab, num_samples, min_start_length, max_start_length, ascenders, descenders, evens, odds):
     results = []
@@ -25,3 +25,7 @@ def count_rule_violations(walk, graph, ascenders, descenders, evens, odds):
         if not check_rule_compliance(walk[:i+1], graph, ascenders, descenders, evens, odds):
             violations += 1
     return violations
+
+def plot_violations(walk,graph):
+    plot =[]
+    return plot

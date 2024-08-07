@@ -1,6 +1,6 @@
 import torch
 
-def generate_walk(model, start_sequence, max_length, vocab, device='cuda' if torch.cuda.is_available() else 'cpu'):
+def seed_walk(model, start_sequence, max_length, vocab, device='cuda' if torch.cuda.is_available() else 'cpu'):
     model.eval()
     current_sequence = start_sequence.copy()
     
