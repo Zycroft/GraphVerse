@@ -4,7 +4,7 @@ import torch
 import pandas as pd
 import math
 
-from graphverse.graph.graph_generation import generate_graph, calculate_edge_density
+from graphverse.graph.graph_generation import generate_random_graph, calculate_edge_density
 from graphverse.graph.rules import AscenderRule, DescenderRule, EvenRule, OddRule
 from graphverse.graph.rules import define_ascenders, define_descenders, define_evens_odds
 from graphverse.data.preparation import prepare_training_data

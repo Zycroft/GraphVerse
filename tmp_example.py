@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import torch
 import pandas as pd
 import math
-from graphverse.graph.graph_generation import generate_graph, calculate_edge_density
+from graphverse.graph.graph_generation import generate_random_graph, calculate_edge_density
 from graphverse.graph.rules import define_ascenders, define_descenders, define_evens_odds
 from graphverse.data.preparation import prepare_training_data
 from graphverse.llm.training import train_model
@@ -12,7 +12,7 @@ from graphverse.llm.evaluation import evaluate_model
 # Generate graph
 n = 1000  # Number of vertices
 c = 1.1   # Constant factor
-graph = generate_graph(n, c)
+graph = generate_random_graph(n, c)
 
 # Calculate and print the actual edge density
 actual_density = calculate_edge_density(graph)
