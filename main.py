@@ -24,7 +24,7 @@ def main():
 
     # Print the probability distribution for a few nodes
     for node in range(min(5, n)):
-    print(f"\nProbability distribution for node {node}:")
+        print(f"\nProbability distribution for node {node}:")
     for u, v, data in G.out_edges(node, data=True):
         print(f"  Edge ({u}, {v}): {data['probability']:.4f}")
 
