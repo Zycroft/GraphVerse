@@ -1,7 +1,10 @@
 import random
-from .rules import check_rule_compliance
+from .rules import Rule
 
-def generate_valid_walk(graph, start_vertex, min_length, max_length, ascenders, descenders, evens, odds):
+def check_rule_compliance(walk, graph, rules):
+    return all(rule.apply(walk, graph) for rule in rules)
+
+def generate_valid_walk(graph, start_vertex, min_length, max_length, rules):
     """
     Generate a walk that satisfies all rules.
     The walk length will be between min_length and max_length, 
@@ -13,7 +16,7 @@ def generate_valid_walk(graph, start_vertex, min_length, max_length, ascenders, 
     while len(walk) < target_length:
         valid_neighbors = [
             neighbor for neighbor in graph.neighbors(walk[-1])
-            if check_rule_compliance(walk + [neighbor], graph, ascenders, descenders, evens, odds)
+            if check_rule_compliance(walk + [neighbor], graph, rules)
         ]
         
         if not valid_neighbors:
@@ -24,7 +27,7 @@ def generate_valid_walk(graph, start_vertex, min_length, max_length, ascenders, 
     
     return walk if len(walk) >= min_length else None
 
-def generate_multiple_walks(graph, num_walks, min_length, max_length, ascenders, descenders, evens, odds):
+def generate_multiple_walks(graph, num_walks, min_length, max_length, rules):
     """
     Generate multiple valid walks for training data.
     Includes walks that reach dead-ends while satisfying rules.
@@ -35,7 +38,7 @@ def generate_multiple_walks(graph, num_walks, min_length, max_length, ascenders,
     
     while len(walks) < num_walks and attempts < max_attempts:
         start_vertex = random.choice(list(graph.nodes))
-        walk = generate_valid_walk(graph, start_vertex, min_length, max_length, ascenders, descenders, evens, odds)
+        walk = generate_valid_walk(graph, start_vertex, min_length, max_length, rules)
         if walk:
             walks.append(walk)
         attempts += 1
