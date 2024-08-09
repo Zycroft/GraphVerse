@@ -23,6 +23,22 @@ def define_evens_odds(graph, n):
     odds = set(random.sample([v for v in graph.nodes() if v % 2 != 0], k=n//10))
     return evens, odds
 
+def check_rule_compliance(walk, ascenders, descenders, evens, odds):
+    """Check if a given walk complies with all rules."""
+    for i, v in enumerate(walk):
+        if v in ascenders:
+            if any(walk[j] <= v for j in range(i+1, len(walk))):
+                return False
+        if v in descenders:
+            if any(walk[j] >= v for j in range(i+1, len(walk))):
+                return False
+        if v in evens:
+            if any(walk[j] % 2 != 0 for j in range(i+1, len(walk))):
+                return False
+        if v in odds:
+            if any(walk[j] % 2 == 0 for j in range(i+1, len(walk))):
+                return False
+    return True
 
 class Rule(ABC):
     @abstractmethod
@@ -79,3 +95,4 @@ class OddRule(Rule):
                 if any(walk[j] % 2 == 0 for j in range(i+1, len(walk))):
                     return False
         return True
+
