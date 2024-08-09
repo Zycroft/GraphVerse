@@ -18,8 +18,8 @@ class WalkVocabulary:
     def __len__(self):
         return len(self.token2idx)
 
-def prepare_training_data(graph, num_samples, min_length, max_length, ascenders, descenders, evens, odds):
-    walks = generate_multiple_walks(graph, num_samples, min_length, max_length, ascenders, descenders, evens, odds)
+def prepare_training_data(graph, num_samples, min_length, max_length, rules):
+    walks = generate_multiple_walks(graph, num_samples, min_length, max_length, rules)
     vocab = WalkVocabulary(walks)
     
     tensor_data = []

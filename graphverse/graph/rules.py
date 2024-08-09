@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import random
 
 def define_ascenders(graph, n):
@@ -22,7 +23,7 @@ def define_evens_odds(graph, n):
     odds = set(random.sample([v for v in graph.nodes() if v % 2 != 0], k=n//10))
     return evens, odds
 
-def check_rule_compliance(walk, graph, ascenders, descenders, evens, odds):
+def check_rule_compliance(walk, ascenders, descenders, evens, odds):
     """Check if a given walk complies with all rules."""
     for i, v in enumerate(walk):
         if v in ascenders:
@@ -38,3 +39,60 @@ def check_rule_compliance(walk, graph, ascenders, descenders, evens, odds):
             if any(walk[j] % 2 == 0 for j in range(i+1, len(walk))):
                 return False
     return True
+
+class Rule(ABC):
+    @abstractmethod
+    def apply(self, walk, graph):
+        """
+        Check if the rule is satisfied for the given walk.
+        
+        :param walk: List of vertices representing the walk
+        :param graph: The graph on which the walk is performed
+        :return: True if the rule is satisfied, False otherwise
+        """
+        pass
+
+class AscenderRule(Rule):
+    def __init__(self, ascenders):
+        self.ascenders = ascenders
+
+    def apply(self, walk):
+        for i, v in enumerate(walk):
+            if v in self.ascenders:
+                if any(walk[j] <= v for j in range(i+1, len(walk))):
+                    return False
+        return True
+
+class DescenderRule(Rule):
+    def __init__(self, descenders):
+        self.descenders = descenders
+
+    def apply(self, walk):
+        for i, v in enumerate(walk):
+            if v in self.descenders:
+                if any(walk[j] >= v for j in range(i+1, len(walk))):
+                    return False
+        return True
+
+class EvenRule(Rule):
+    def __init__(self, evens):
+        self.evens = evens
+
+    def apply(self, walk):
+        for i, v in enumerate(walk):
+            if v in self.evens:
+                if any(walk[j] % 2 != 0 for j in range(i+1, len(walk))):
+                    return False
+        return True
+
+class OddRule(Rule):
+    def __init__(self, odds):
+        self.odds = odds
+
+    def apply(self, walk):
+        for i, v in enumerate(walk):
+            if v in self.odds:
+                if any(walk[j] % 2 == 0 for j in range(i+1, len(walk))):
+                    return False
+        return True
+
