@@ -56,7 +56,7 @@ class AscenderRule(Rule):
     def __init__(self, ascenders):
         self.ascenders = ascenders
 
-    def apply(self, walk, graph):
+    def apply(self, walk):
         for i, v in enumerate(walk):
             if v in self.ascenders:
                 if any(walk[j] <= v for j in range(i+1, len(walk))):
@@ -67,7 +67,7 @@ class DescenderRule(Rule):
     def __init__(self, descenders):
         self.descenders = descenders
 
-    def apply(self, walk, graph):
+    def apply(self, walk):
         for i, v in enumerate(walk):
             if v in self.descenders:
                 if any(walk[j] >= v for j in range(i+1, len(walk))):
@@ -78,7 +78,7 @@ class EvenRule(Rule):
     def __init__(self, evens):
         self.evens = evens
 
-    def apply(self, walk, graph):
+    def apply(self, walk):
         for i, v in enumerate(walk):
             if v in self.evens:
                 if any(walk[j] % 2 != 0 for j in range(i+1, len(walk))):
@@ -89,7 +89,7 @@ class OddRule(Rule):
     def __init__(self, odds):
         self.odds = odds
 
-    def apply(self, walk, graph):
+    def apply(self, walk):
         for i, v in enumerate(walk):
             if v in self.odds:
                 if any(walk[j] % 2 == 0 for j in range(i+1, len(walk))):
