@@ -1,10 +1,6 @@
 from ..graph.walk import check_rule_compliance
-<<<<<<< HEAD
-from ..graph.graph_generation import generate_walk
-
-=======
 from .token_generation import seed_walk
->>>>>>> c27726ad4aaeb98f3c550dad7b7718388debaf3d
+
 
 def evaluate_model(model, graph, vocab, num_samples, min_start_length, max_start_length, rules):
     results = []
