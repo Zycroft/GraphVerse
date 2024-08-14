@@ -1,7 +1,7 @@
 import random
 from .rules import Rule
 
-def check_rule_compliance(walk, graph, rules):
+def check_rule_compliance(walk, rules):
     return all(rule.apply(walk) for rule in rules)
 
 def generate_valid_walk(graph, start_vertex, min_length, max_length, rules):
