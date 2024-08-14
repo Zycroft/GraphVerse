@@ -65,3 +65,6 @@ def main():
     # Optional: Save results to a CSV file
     df_results.to_csv('evaluation_results.csv', index=False)
     print("Detailed results saved to 'evaluation_results.csv'")
+
+if __name__ == "__main__":
+    main()
