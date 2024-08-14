@@ -16,7 +16,7 @@ def generate_valid_walk(graph, start_vertex, min_length, max_length, rules):
     while len(walk) < target_length:
         valid_neighbors = [
             neighbor for neighbor in graph.neighbors(walk[-1])
-            if check_rule_compliance(walk + [neighbor], graph, rules)
+            if check_rule_compliance(walk + [neighbor], rules)
         ]
         
         if not valid_neighbors:
