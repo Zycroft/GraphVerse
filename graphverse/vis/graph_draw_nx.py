@@ -35,33 +35,3 @@ def visualize_graph(G):
     plt.tight_layout()
     plt.show()
     return
-
-
-def graph_draw(G):
-    pos = nx.spring_layout(G)
-    nx.draw(G)
-    # nx.draw_networkx(G, arrows=True)
-    # plt.show()
-    return
-
-    """    
-        # values = [val_map.get(node, 0.25) for node in G.nodes()]
-        # Specify the edges you want here
-        # red_edges = [('A', 'C'), ('E', 'C')]
-        edge_colours = ['black']
-        # edge_colours = ['black' if not edge in red_edges else 'red'
-        #                for edge in G.edges()]
-        # black_edges = [edge for edge in G.edges() if edge not in red_edges]
-        black_edges = [edge for edge in G.edges()]
-        # Need to create a layout when doing
-        # separate calls to draw nodes and edges
-        pos = nx.spring_layout(G)
-        nx.draw_networkx_nodes(G, pos, cmap=plt.get_cmap('jet'),
-                                node_color='blue', node_size=500)
-        nx.draw_networkx_labels(G, pos)
-        # nx.draw_networkx_edges(G, pos, edgelist=red_edges,
-        #                       edge_color='r', arrows=True)
-        nx.draw_networkx_edges(G, pos, edgelist=black_edges, arrows=False)
-        plt.show()
-        return
-        """
