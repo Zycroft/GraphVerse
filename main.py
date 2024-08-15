@@ -3,20 +3,31 @@ import matplotlib.pyplot as plt
 import torch
 import pandas as pd
 import math
+import sys
 
-from graphverse.graph.graph_generation import generate_random_graph, calculate_edge_density
+from graphverse.vis.graph_draw_nx import graph_draw, visualize_graph
+from graphverse.graph.graph_generation import generate_random_graph, calculate_edge_density, save_graph, load_graph
 from graphverse.graph.rules import AscenderRule, DescenderRule, EvenRule, OddRule
 from graphverse.graph.rules import define_ascenders, define_descenders, define_evens_odds
 from graphverse.data.preparation import prepare_training_data
 from graphverse.llm.training import train_model
 from graphverse.llm.evaluation import evaluate_model
 
-def main():
+
+def main(arg1=None):
+    # Draw the graph
+    if arg1 == 'draw':
+        G = load_graph('my_graph.gml')
+        visualize_graph(G)
+        # graph_draw(G)
+        return
     # Generate graph
-    n = 1000  # Number of vertices
+    n = 100  # Number of vertices  #MDW changed from 1000 to 10
     c = 1.1   # Constant factor
     G = generate_random_graph(n)
 
+    # Save the graph to a file
+    save_graph(G, 'my_graph.gml')
     # Print some information about the graph
     print(f"Number of nodes: {G.number_of_nodes()}")
     print(f"Number of edges: {G.number_of_edges()}")
@@ -25,7 +36,7 @@ def main():
 
     # Print the probability distribution for a few nodes
     for node in range(min(5, n)):
-      print(f"\nProbability distribution for node {node}:")
+        print(f"\nProbability distribution for node {node}:")
     for u, v, data in G.out_edges(node, data=True):
         print(f"  Edge ({u}, {v}): {data['probability']:.4f}")
 
@@ -36,21 +47,24 @@ def main():
 
     # Create rule tuple
     rules = (
-    AscenderRule(ascenders),
-    DescenderRule(descenders),
-    EvenRule(evens),
-    OddRule(odds)
-)
+        AscenderRule(ascenders),
+        DescenderRule(descenders),
+        EvenRule(evens),
+        OddRule(odds)
+    )
 
     # Prepare training data
-    training_data, vocab = prepare_training_data(G, num_samples=10000, min_length=10, max_length=50, rules=rules)
+    training_data, vocab = prepare_training_data(
+        G, num_samples=100, min_length=10, max_length=50, rules=rules)  # MDW changed num_samples from 10000 to 100
 
     # Train the model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = train_model(training_data, vocab, epochs=10, batch_size=32, learning_rate=0.001, device=device)
+    model = train_model(training_data, vocab, epochs=10,
+                        batch_size=32, learning_rate=0.001, device=device)
 
     # Evaluate the model
-    max_corpus_length = training_data.size(1)  # Get the maximum sequence length
+    max_corpus_length = training_data.size(
+        1)  # Get the maximum sequence length
     evaluation_results = evaluate_model(model, G, vocab, num_samples=1000,
                                         min_start_length=1, max_start_length=int(0.1 * max_corpus_length),
                                         ascenders=ascenders, descenders=descenders, evens=evens, odds=odds)
@@ -59,12 +73,22 @@ def main():
     df_results = pd.DataFrame(evaluation_results)
 
     print("\nEvaluation Results:")
-    print(f"Average rule violations: {df_results['rule_violations'].mean():.2f}")
-    print(f"Average generated walk length: {df_results['generated_length'].mean():.2f}")
+    print(
+        f"Average rule violations: {df_results['rule_violations'].mean():.2f}")
+    print(
+        f"Average generated walk length: {df_results['generated_length'].mean():.2f}")
 
     # Optional: Save results to a CSV file
     df_results.to_csv('evaluation_results.csv', index=False)
     print("Detailed results saved to 'evaluation_results.csv'")
 
-if __name__ == "__main__":
-    main()
+
+    # Run the main function
+if __name__ == '__main__':
+    print('argument list', sys.argv)
+    if len(sys.argv) > 1:
+        arg1 = sys.argv[1]
+    else:
+        arg1 = None
+
+    main(arg1)
