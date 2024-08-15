@@ -5,7 +5,7 @@ import pandas as pd
 import math
 import sys
 
-from graphverse.vis.graph_draw_nx import graph_draw, visualize_graph
+from graphverse.vis.graph_draw_nx import visualize_graph
 from graphverse.graph.graph_generation import generate_random_graph, calculate_edge_density, save_graph, load_graph
 from graphverse.graph.rules import AscenderRule, DescenderRule, EvenRule, OddRule
 from graphverse.graph.rules import define_ascenders, define_descenders, define_evens_odds
