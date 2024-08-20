@@ -89,7 +89,7 @@ class OddRule(Rule):
     def __init__(self, odds):
         self.odds = odds
 
-    def applyapply(self, graph, walk):
+    def apply(self, graph, walk):
         for i, v in enumerate(walk):
             if v in self.odds:
                 if any(walk[j] % 2 == 0 for j in range(i+1, len(walk))):
