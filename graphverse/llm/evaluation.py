@@ -1,5 +1,6 @@
 from ..graph.walk import check_rule_compliance
 from .token_generation import seed_walk
+import random
 
 
 def evaluate_model(model, graph, vocab, num_samples, min_start_length, max_start_length, rules):
