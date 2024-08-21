@@ -9,7 +9,7 @@ def evaluate_model(model, graph, vocab, num_samples, min_start_length, max_start
     for _ in range(num_samples):
         start_length = random.randint(min_start_length, max_start_length)
         start_sequence = random.choices(list(graph.nodes()), k=start_length)
-        generated_walk = generate_walk(
+        generated_walk = seed_walk(
             model, start_sequence, max_length=100, vocab=vocab)
 
         rule_violations = count_rule_violations(generated_walk, graph, rules)
