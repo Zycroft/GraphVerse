@@ -59,7 +59,7 @@ class AscenderRule(Rule):
     def apply(self, graph, walk):
         for i, v in enumerate(walk):
             if v in self.ascenders:
-                if any(walk[j].as_python_object() <= v for j in range(i+1, len(walk))):
+                if any(walk[j] < v for j in range(i+1, len(walk))):
                     return False
         return True
 
@@ -70,7 +70,7 @@ class DescenderRule(Rule):
     def apply(self, graph, walk):
         for i, v in enumerate(walk):
             if v in self.descenders:
-                if any(walk[j].as_python_object() >= v for j in range(i+1, len(walk))):
+                if any(walk[j] > v for j in range(i+1, len(walk))):
                     return False
         return True
 
