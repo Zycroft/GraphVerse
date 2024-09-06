@@ -12,12 +12,14 @@ def evaluate_model(model, graph, vocab, num_samples, min_start_length, max_start
         generated_walk = seed_walk(
             model, start_sequence, max_length=100, vocab=vocab)
 
-        rule_violations = count_rule_violations(generated_walk, graph, rules)
-        results.append({
-            'start_length': start_length,
-            'generated_length': len(generated_walk),
-            'rule_violations': rule_violations
-        })
+        if generated_walk is not None:
+            rule_violations = count_rule_violations(
+                generated_walk, graph, rules)
+            results.append({
+                'start_length': start_length,
+                'generated_length': len(generated_walk),
+                'rule_violations': rule_violations
+            })
 
     return results
 
