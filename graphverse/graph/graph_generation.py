@@ -25,13 +25,15 @@ def generate_random_graph(n, num_in_edges, num_out_edges):
                 G.add_edge(u, v)
                 out_neighbors.add(v)
 
-    # Ensure there exists a walk between any two vertices
+    # Ensure there exists a walk between any two vertices - incredibly silly method but it works
     while not nx.is_strongly_connected(G):
         u = random.randint(0, n-1)
         v = random.randint(0, n-1)
         if not nx.has_path(G, u, v):
-            w = random.randint(0, n-1)
-            G.add_edge(u, w)
+            path = random.sample(range(n), n//2)
+            for i in range(len(path)-1):
+                G.add_edge(path[i], path[i+1])
+            G.add_edge(u, path[0])
             G.add_edge(w, v)
 
     # Assign random probability distributions to outgoing edges

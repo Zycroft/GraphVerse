@@ -1,7 +1,11 @@
 import torch
 from ..graph.walk import generate_multiple_walks
+from ..graph.walk import generate_valid_walk
 
 class WalkVocabulary:
+    """
+    Vocabulary for walks.
+    """
     def __init__(self, walks):
         self.token2idx = {'<PAD>': 0, '<START>': 1, '<END>': 2}
         self.idx2token = {0: '<PAD>', 1: '<START>', 2: '<END>'}
@@ -19,7 +23,17 @@ class WalkVocabulary:
         return len(self.token2idx)
 
 def prepare_training_data(graph, num_samples, min_length, max_length, rules):
+    """
+    Prepare training data for the model.
+    """
+
+
+
+
+    # Generate walks
     walks = generate_multiple_walks(graph, num_samples, min_length, max_length, rules)
+
+    # Create vocabulary
     vocab = WalkVocabulary(walks)
     
     tensor_data = []
