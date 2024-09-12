@@ -38,3 +38,4 @@ class WalkTransformer(nn.Module):
         output = self.transformer(embedded)
         output = output.transpose(0, 1)  # (seq, batch, feature) -> (batch, seq, feature)
         return self.fc_out(output)
+        

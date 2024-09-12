@@ -34,7 +34,7 @@ def generate_random_graph(n, num_in_edges, num_out_edges):
             for i in range(len(path)-1):
                 G.add_edge(path[i], path[i+1])
             G.add_edge(u, path[0])
-            G.add_edge(w, v)
+            G.add_edge(path[-1], v)
 
     # Assign random probability distributions to outgoing edges
     for node in G.nodes():
