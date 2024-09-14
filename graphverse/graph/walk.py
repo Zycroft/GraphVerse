@@ -17,6 +17,12 @@ def generate_valid_walk(graph, start_vertex, min_length, max_length, rules, max_
     print(f"Starting walk from node {start_vertex}")
     
     while len(walk) < target_length:
+        if not walk:
+            # If the walk becomes empty, restart from the starting vertex
+            walk = [start_vertex]
+            attempts = 0
+            continue
+
         valid_neighbors = [
             neighbor for neighbor in graph.neighbors(walk[-1])
             if check_rule_compliance(graph, walk + [neighbor], rules)
