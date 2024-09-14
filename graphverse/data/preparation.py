@@ -38,7 +38,7 @@ def prepare_training_data(graph, num_samples, min_length, max_length, rules):
     # Generate walks
     walks = generate_multiple_walks(graph, num_samples, min_length, max_length, rules)
 
-    walks = walks + valid_walks
+    walks = walks + per_node_walks
 
     # Create vocabulary
     vocab = WalkVocabulary(walks)
