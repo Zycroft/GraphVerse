@@ -159,3 +159,68 @@ def has_cycle_of_length(graph, vertex, length):
         return False
     
     return dfs(vertex, 0)
+
+def define_all_rules(graph, n, num_repeaters, min_steps, max_steps):
+    """
+    Define all rule vertices while ensuring each vertex is assigned at most one rule.
+    """
+    rule_vertices = set()
+
+    # Define ascenders
+    ascenders = define_rule_vertices(graph, n, rule_vertices)
+    rule_vertices.update(ascenders)
+
+    # Define descenders
+    descenders = define_rule_vertices(graph, n, rule_vertices)
+    rule_vertices.update(descenders)
+
+    # Define evens and odds
+    evens, odds = define_evens_odds(graph, n, rule_vertices)
+    rule_vertices.update(evens)
+    rule_vertices.update(odds)
+
+    # Define repeaters
+    repeaters = define_repeaters(graph, num_repeaters, min_steps, max_steps, rule_vertices)
+
+    return ascenders, descenders, evens, odds, repeaters
+
+def define_rule_vertices(graph, n, existing_rule_vertices):
+    """
+    Define rule vertices while ensuring they are not already assigned to another rule.
+    """
+    available_vertices = set(graph.nodes()) - existing_rule_vertices
+    mid = n // 2
+    range_start = int(mid * 0.9)
+    range_end = int(mid * 1.1)
+    candidates = [v for v in available_vertices if range_start <= v <= range_end]
+    return set(random.sample(candidates, k=min(len(candidates)//5, len(candidates))))
+
+def define_evens_odds(graph, n, existing_rule_vertices):
+    """
+    Randomly select even and odd vertices that are not already assigned to another rule.
+    """
+    available_vertices = set(graph.nodes()) - existing_rule_vertices
+    evens = set(random.sample([v for v in available_vertices if v % 2 == 0], k=min(n//10, len(available_vertices))))
+    odds = set(random.sample([v for v in available_vertices if v % 2 != 0], k=min(n//10, len(available_vertices))))
+    return evens, odds
+
+def define_repeaters(graph, num_repeaters, min_steps, max_steps, existing_rule_vertices):
+    """
+    Randomly select vertices and their corresponding number of steps for the repeater rule,
+    ensuring they are not already assigned to another rule.
+    """
+    available_vertices = set(graph.nodes()) - existing_rule_vertices
+    repeaters = {}
+    
+    for _ in range(num_repeaters):
+        if not available_vertices:
+            break
+        
+        vertex = random.choice(list(available_vertices))
+        steps = random.randint(min_steps, max_steps)
+        
+        if has_cycle_of_length(graph, vertex, steps):
+            repeaters[vertex] = steps
+            available_vertices.remove(vertex)
+    
+    return repeaters

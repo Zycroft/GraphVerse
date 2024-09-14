@@ -29,6 +29,7 @@ def generate_valid_walk(graph, start_vertex, min_length, max_length, rules, max_
         ]
         
         if not valid_neighbors:
+            print(f"No valid neighbors found for node {walk[-1]}")
             attempts += 1
             
             if attempts >= max_attempts:
