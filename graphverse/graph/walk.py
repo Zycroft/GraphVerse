@@ -24,7 +24,6 @@ def generate_valid_walk(graph, start_vertex, min_length, max_length, rules, max_
         
         if not valid_neighbors:
             attempts += 1
-            print(f"Attempt {attempts} failed at node {walk[-1]}")
             
             if attempts >= max_attempts:
                 print(f"Maximum attempts reached. Restarting walk from node {start_vertex}")
@@ -36,7 +35,6 @@ def generate_valid_walk(graph, start_vertex, min_length, max_length, rules, max_
         else:
             next_vertex = random.choice(valid_neighbors)
             walk.append(next_vertex)
-            attempts = 0
     
     if len(walk) >= min_length:
         print(f"Valid walk generated: {walk}")
