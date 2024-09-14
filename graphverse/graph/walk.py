@@ -59,12 +59,19 @@ def generate_multiple_walks(graph, num_walks, min_length, max_length, rules):
     attempts = 0
     max_attempts = 10  # Arbitrary limit to prevent infinite loops
     
-    while len(walks) < num_walks and attempts < max_attempts:
+    while len(walks) < num_walks:
         print(f"On walk {len(walks)} out of {num_walks}")
         start_vertex = random.choice(list(graph.nodes))
         walk = generate_valid_walk(graph, start_vertex, min_length, max_length, rules)
+        
         if walk:
             walks.append(walk)
-        attempts += 1
+            attempts = 0  # Reset attempts counter on successful walk generation
+        else:
+            attempts += 1
+            
+            if attempts >= max_attempts:
+                print(f"Maximum attempts reached for vertex {start_vertex}. Moving to a new starting vertex.")
+                attempts = 0  # Reset attempts counter for the new starting vertex
     
     return walks

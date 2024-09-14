@@ -27,16 +27,18 @@ def prepare_training_data(graph, num_samples, min_length, max_length, rules):
     Prepare training data for the model.
     """
     print(f"Generating a walk starting from each node in the graph...")
-    valid_walks = []
+    per_node_walks = []
     for node in graph.nodes:
         print(f"Generating a walk starting from node {node}")
         valid_walk = generate_valid_walk(graph, node, min_length, max_length, rules)
         if valid_walk:
-            valid_walks.append(valid_walk)
+            per_node_walks.append(valid_walk)
         print()  # Print a new line after each iteration
     
     # Generate walks
     walks = generate_multiple_walks(graph, num_samples, min_length, max_length, rules)
+
+    walks = walks + valid_walks
 
     # Create vocabulary
     vocab = WalkVocabulary(walks)
