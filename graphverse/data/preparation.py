@@ -26,6 +26,7 @@ def prepare_training_data(graph, num_samples, min_length, max_length, rules):
     """
     Prepare training data for the model.
     """
+    print(f"Generating a walk starting from each node in the graph...")
     valid_walks = []
     for node in graph.nodes:
         valid_walk = generate_valid_walk(graph, node, min_length, max_length, rules)

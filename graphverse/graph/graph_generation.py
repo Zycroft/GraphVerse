@@ -32,7 +32,7 @@ def generate_random_graph(n, num_in_edges, num_out_edges):
         if not nx.has_path(G, u, v):
             path = random.sample(range(n), n//2)
             for i in range(len(path)-1):
-                G.add_edge(path[i], path[i+1])
+                G.add_edge(path[i], path[i+1])  
             G.add_edge(u, path[0])
             G.add_edge(path[-1], v)
 
