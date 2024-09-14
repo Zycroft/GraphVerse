@@ -4,7 +4,7 @@ from .rules import Rule
 def check_rule_compliance(graph, walk, rules):
     return all(rule.apply(graph, walk) for rule in rules)
 
-def generate_valid_walk(graph, start_vertex, min_length, max_length, rules):
+def generate_valid_walk(graph, start_vertex, min_length, max_length, rules, max_attempts=10):
     """
     Generate a walk that satisfies all rules.
     The walk length will be between min_length and max_length, 
@@ -12,6 +12,9 @@ def generate_valid_walk(graph, start_vertex, min_length, max_length, rules):
     """
     target_length = random.randint(min_length, max_length)
     walk = [start_vertex]
+    attempts = 0
+    
+    print(f"Starting walk from node {start_vertex}", end='\r', flush=True)
     
     while len(walk) < target_length:
         valid_neighbors = [
@@ -20,12 +23,27 @@ def generate_valid_walk(graph, start_vertex, min_length, max_length, rules):
         ]
         
         if not valid_neighbors:
-            break  # Dead-end reached
-        
-        next_vertex = random.choice(valid_neighbors)
-        walk.append(next_vertex)
+            attempts += 1
+            print(f"Attempt {attempts} failed at node {walk[-1]}", end='\r', flush=True)
+            
+            if attempts >= max_attempts:
+                print(f"Maximum attempts reached. Restarting walk from node {start_vertex}", end='\r', flush=True)
+                walk = [start_vertex]
+                attempts = 0
+            else:
+                # Backtrack to the previous vertex and try again
+                walk.pop()
+        else:
+            next_vertex = random.choice(valid_neighbors)
+            walk.append(next_vertex)
+            attempts = 0
     
-    return walk if len(walk) >= min_length else None
+    if len(walk) >= min_length:
+        print(f"Valid walk generated: {walk}")
+        return walk
+    else:
+        print(f"Failed to generate a valid walk from node {start_vertex}")
+        return None
 
 def generate_multiple_walks(graph, num_walks, min_length, max_length, rules):
     """
@@ -34,7 +52,7 @@ def generate_multiple_walks(graph, num_walks, min_length, max_length, rules):
     """
     walks = []
     attempts = 0
-    max_attempts = num_walks * 10  # Arbitrary limit to prevent infinite loops
+    max_attempts = 10  # Arbitrary limit to prevent infinite loops
     
     while len(walks) < num_walks and attempts < max_attempts:
         print(f"On walk {len(walks)} out of {num_walks}",flush=True,end='\r')

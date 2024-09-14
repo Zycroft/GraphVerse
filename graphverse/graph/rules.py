@@ -106,3 +106,56 @@ class EdgeExistenceRule(Rule):
             if not graph.has_edge(walk[i], walk[i+1]):
                 return False
         return True
+
+class RepeaterRule(Rule):
+    def __init__(self, repeaters):
+        self.repeaters = repeaters
+
+    def apply(self, graph, walk):
+        walk = [int(item) for item in walk]
+        for v, k in self.repeaters.items():
+            if v in walk:
+                indices = [i for i, x in enumerate(walk) if x == v]
+                for i in range(len(indices) - 1):
+                    if indices[i+1] - indices[i] != k:
+                        return False
+        return True
+
+def define_repeaters(graph, num_repeaters, min_steps, max_steps):
+    """
+    Randomly select vertices and their corresponding number of steps for the repeater rule.
+    """
+    repeaters = {}
+    vertices = list(graph.nodes())
+    
+    for _ in range(num_repeaters):
+        vertex = random.choice(vertices)
+        steps = random.randint(min_steps, max_steps)
+        
+        # Check if a cycle of length `steps` exists that includes the vertex
+        if has_cycle_of_length(graph, vertex, steps):
+            repeaters[vertex] = steps
+    
+    return repeaters
+
+def has_cycle_of_length(graph, vertex, length):
+    """
+    Check if a cycle of the given length exists that includes the specified vertex.
+    """
+    visited = set()
+    
+    def dfs(v, curr_length):
+        if curr_length == length:
+            return v == vertex
+        
+        visited.add(v)
+        
+        for neighbor in graph.neighbors(v):
+            if neighbor not in visited:
+                if dfs(neighbor, curr_length + 1):
+                    return True
+        
+        visited.remove(v)
+        return False
+    
+    return dfs(vertex, 0)
