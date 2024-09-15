@@ -154,30 +154,6 @@ class RepeaterRule(Rule):
                         return indices[i+1]
         return None
 
-def define_repeaters(graph, num_repeaters, min_steps, max_steps):
-    """
-    Randomly select vertices and their corresponding number of steps for the repeater rule.
-    Add k-1 edges to form a loop starting and stopping at the repeater vertex.
-    """
-    repeaters = {}
-    vertices = list(graph.nodes())
-    
-    for _ in range(num_repeaters):
-        vertex = random.choice(vertices)
-        steps = random.randint(min_steps, max_steps)
-        
-        # Add k-1 edges to form a loop starting and stopping at the repeater vertex
-        loop_vertices = random.sample(vertices, steps - 1)
-        loop_vertices.insert(0, vertex)
-        loop_vertices.append(vertex)
-        
-        for i in range(len(loop_vertices) - 1):
-            graph.add_edge(loop_vertices[i], loop_vertices[i + 1])
-        
-        repeaters[vertex] = steps
-    
-    return repeaters
-
 def define_all_rules(graph, n, num_repeaters, repeater_min_steps, repeater_max_steps):
     """
     Define all rule vertices while ensuring each vertex is assigned at most one rule.
@@ -222,20 +198,20 @@ def define_evens_odds(graph, n, existing_rule_vertices):
     odds = set(random.sample([v for v in available_vertices if v % 2 != 0], k=min(n//10, len(available_vertices))))
     return evens, odds
 
-def define_repeaters(graph, num_repeaters, min_steps, max_steps):
+def define_repeaters(graph, num_repeaters, min_steps, max_steps, existing_rule_vertices):
     """
     Randomly select vertices and their corresponding number of steps for the repeater rule.
     Add k-1 edges to form a loop starting and stopping at the repeater vertex.
     """
     repeaters = {}
-    vertices = list(graph.nodes())
+    available_vertices = set(graph.nodes()) - existing_rule_vertices
     
     for _ in range(num_repeaters):
-        vertex = random.choice(vertices)
+        vertex = random.choice(available_vertices)
         steps = random.randint(min_steps, max_steps)
         
         # Add k-1 edges to form a loop starting and stopping at the repeater vertex
-        loop_vertices = random.sample(vertices, steps - 1)
+        loop_vertices = random.sample(available_vertices, steps - 1)
         loop_vertices.insert(0, vertex)
         loop_vertices.append(vertex)
         
