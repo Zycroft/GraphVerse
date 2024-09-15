@@ -26,14 +26,6 @@ print(f"Number of edges: {G.number_of_edges()}")
 print(f"Is strongly connected: {nx.is_strongly_connected(G)}")
 print(f"Is wealkly connected: {nx.is_weakly_connected(G)}")
 
-''' Needs to be reworked
-# Print the probability distribution for a few nodes
-for node in range(min(5, n)):
-  print(f"\nProbability distribution for node {node}:")
-for u, v, data in G.out_edges(node, data=True):
-    print(f"  Edge ({u}, {v}): {data['probability']:.4f}")
-'''
-
 # Define rule sets
 print('selecting vertices with rules')
 ascenders, descenders, evens, odds, repeaters = define_all_rules(G,n,3,10,100)

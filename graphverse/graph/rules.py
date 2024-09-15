@@ -178,29 +178,7 @@ def define_repeaters(graph, num_repeaters, min_steps, max_steps):
     
     return repeaters
 
-def has_cycle_of_length(graph, vertex, length):
-    """
-    Check if a cycle of the given length exists that includes the specified vertex.
-    """
-    visited = set()
-    
-    def dfs(v, curr_length):
-        if curr_length == length:
-            return v == vertex
-        
-        visited.add(v)
-        
-        for neighbor in graph.neighbors(v):
-            if neighbor not in visited:
-                if dfs(neighbor, curr_length + 1):
-                    return True
-        
-        visited.remove(v)
-        return False
-    
-    return dfs(vertex, 0)
-
-def define_all_rules(graph, n, num_repeaters, min_steps, max_steps):
+def define_all_rules(graph, n, num_repeaters, repeater_min_steps, repeater_max_steps):
     """
     Define all rule vertices while ensuring each vertex is assigned at most one rule.
     """
@@ -220,7 +198,7 @@ def define_all_rules(graph, n, num_repeaters, min_steps, max_steps):
     rule_vertices.update(odds)
 
     # Define repeaters
-    repeaters = define_repeaters(graph, num_repeaters, min_steps, max_steps, rule_vertices)
+    repeaters = define_repeaters(graph, num_repeaters, repeater_min_steps, repeater_max_steps, rule_vertices)
 
     return ascenders, descenders, evens, odds, repeaters
 
@@ -244,23 +222,26 @@ def define_evens_odds(graph, n, existing_rule_vertices):
     odds = set(random.sample([v for v in available_vertices if v % 2 != 0], k=min(n//10, len(available_vertices))))
     return evens, odds
 
-def define_repeaters(graph, num_repeaters, min_steps, max_steps, existing_rule_vertices):
+def define_repeaters(graph, num_repeaters, min_steps, max_steps):
     """
-    Randomly select vertices and their corresponding number of steps for the repeater rule,
-    ensuring they are not already assigned to another rule.
+    Randomly select vertices and their corresponding number of steps for the repeater rule.
+    Add k-1 edges to form a loop starting and stopping at the repeater vertex.
     """
-    available_vertices = set(graph.nodes()) - existing_rule_vertices
     repeaters = {}
+    vertices = list(graph.nodes())
     
     for _ in range(num_repeaters):
-        if not available_vertices:
-            break
-        
-        vertex = random.choice(list(available_vertices))
+        vertex = random.choice(vertices)
         steps = random.randint(min_steps, max_steps)
         
-        if has_cycle_of_length(graph, vertex, steps):
-            repeaters[vertex] = steps
-            available_vertices.remove(vertex)
+        # Add k-1 edges to form a loop starting and stopping at the repeater vertex
+        loop_vertices = random.sample(vertices, steps - 1)
+        loop_vertices.insert(0, vertex)
+        loop_vertices.append(vertex)
+        
+        for i in range(len(loop_vertices) - 1):
+            graph.add_edge(loop_vertices[i], loop_vertices[i + 1])
+        
+        repeaters[vertex] = steps
     
     return repeaters
