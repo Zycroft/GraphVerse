@@ -6,14 +6,14 @@ import math
 import random
 
 from graphverse.graph.graph_generation import generate_random_graph, calculate_edge_density
-from graphverse.graph.rules import AscenderRule, DescenderRule, EvenRule, OddRule
-from graphverse.graph.rules import define_ascenders, define_descenders, define_evens_odds
+from graphverse.graph.rules import AscenderRule, DescenderRule, EvenRule, OddRule, RepeaterRule
+from graphverse.graph.rules import define_all_rules
 from graphverse.data.preparation import prepare_training_data
 from graphverse.llm.training import train_model
 from graphverse.llm.evaluation import evaluate_model
 
 # Generate graph
-n = 10000  # Number of vertices
+n = 1000  # Number of vertices
 in_edges = 100 #inital number of edges each vertex should have
 out_edges = 100 #'' out edges
 G = generate_random_graph(n,in_edges,out_edges)
@@ -24,7 +24,7 @@ print(f'graph created')
 print(f"Number of nodes: {G.number_of_nodes()}")
 print(f"Number of edges: {G.number_of_edges()}")
 print(f"Is strongly connected: {nx.is_strongly_connected(G)}")
-print(f"Is wealky connected: {nx.is_weakly_connected(G)}")
+print(f"Is wealkly connected: {nx.is_weakly_connected(G)}")
 
 ''' Needs to be reworked
 # Print the probability distribution for a few nodes
@@ -35,21 +35,17 @@ for u, v, data in G.out_edges(node, data=True):
 '''
 
 # Define rule sets
-ascenders = define_ascenders(G, n)
-descenders = define_descenders(G, n)
-evens, odds = define_evens_odds(G, n)
-print(f'rules defined')
-print(f'ascenders: {ascenders}')
-print(f'descenders: {descenders}')
-print(f'evens: {evens}')
-print(f'odds: {odds}')
+print('selecting vertices with rules')
+ascenders, descenders, evens, odds, repeaters = define_all_rules(G,n,3,10,100)
 
+#print all rule se
 # Create rule tuple
 rules = (
 AscenderRule(ascenders),
 DescenderRule(descenders),
 EvenRule(evens),
-OddRule(odds)
+OddRule(odds),
+RepeaterRule(repeaters)
 )
 print(f'Now preparing training data')
 
@@ -72,10 +68,45 @@ evaluation_results = evaluate_model(model, G, vocab, num_samples=10000,
 # Analyze results
 df_results = pd.DataFrame(evaluation_results)
 
+# Calculate average rule violations per rule type
+rule_violations_per_type = df_results['rule_violations'].apply(pd.Series).stack().apply(pd.Series)['rule_type'].value_counts()
+total_violations = rule_violations_per_type.sum()
+avg_violations_per_type = rule_violations_per_type / total_violations
+
 print("\nEvaluation Results:")
-print(f"Average rule violations: {df_results['rule_violations'].mean():.2f}")
-print(f"Average generated walk length: {df_results['generated_length'].mean():.2f}")
+print(f"Total rule violations: {total_violations}")
+print("Average rule violations per rule type:")
+for rule_type, avg_violations in avg_violations_per_type.items():
+    print(f"{rule_type}: {avg_violations:.2%}")
+
+# Calculate average walk length and violation position
+df_violations = pd.json_normalize(df_results['rule_violations'].explode())
+avg_walk_length = df_violations['walk_length'].mean()
+avg_violation_position = df_violations['violation_position'].mean()
+
+print(f"\nAverage walk length: {avg_walk_length:.2f}")
+print(f"Average violation position: {avg_violation_position:.2f}")
+
+# Analyze rule violations by walk length
+walk_length_bins = [0, 10, 20, 30, 40, 50, math.inf]
+walk_length_labels = ['1-10', '11-20', '21-30', '31-40', '41-50', '50+']
+df_violations['walk_length_bin'] = pd.cut(df_violations['walk_length'], bins=walk_length_bins, labels=walk_length_labels)
+violations_by_walk_length = df_violations.groupby('walk_length_bin').size()
+
+print("\nRule violations by walk length:")
+for walk_length_bin, count in violations_by_walk_length.items():
+    print(f"{walk_length_bin}: {count}")
+
+# Analyze rule violations by violation position
+position_bins = [0, 10, 20, 30, 40, 50, math.inf]
+position_labels = ['1-10', '11-20', '21-30', '31-40', '41-50', '50+']
+df_violations['position_bin'] = pd.cut(df_violations['violation_position'], bins=position_bins, labels=position_labels)
+violations_by_position = df_violations.groupby('position_bin').size()
+
+print("\nRule violations by violation position:")
+for position_bin, count in violations_by_position.items():
+    print(f"{position_bin}: {count}")
 
 # Optional: Save results to a CSV file
 df_results.to_csv('evaluation_results.csv', index=False)
-print("Detailed results saved to 'evaluation_results.csv'")
+print("\nDetailed results saved to 'evaluation_results.csv'")

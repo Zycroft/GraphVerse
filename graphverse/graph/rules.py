@@ -55,7 +55,7 @@ class Rule(ABC):
 class AscenderRule(Rule):
     def __init__(self, ascenders):
         self.ascenders = ascenders
-
+    
     def apply(self, graph, walk):
         walk = [int(item) for item in walk]
         for i, v in enumerate(walk):
@@ -63,11 +63,17 @@ class AscenderRule(Rule):
                 if any(walk[j] < v for j in range(i+1, len(walk))):
                     return False
         return True
+    
+    def get_violation_position(self, graph, walk):
+        for i in range(len(walk) - 1):
+            if walk[i] in self.ascenders and walk[i+1] <= walk[i]:
+                return i+1
+        return None
 
 class DescenderRule(Rule):
     def __init__(self, descenders):
         self.descenders = descenders
-
+    
     def apply(self, graph, walk):
         walk = [int(item) for item in walk]
         for i, v in enumerate(walk):
@@ -75,11 +81,17 @@ class DescenderRule(Rule):
                 if any(walk[j] > v for j in range(i+1, len(walk))):
                     return False
         return True
+    
+    def get_violation_position(self, graph, walk):
+        for i in range(len(walk) - 1):
+            if walk[i] in self.descenders and walk[i+1] >= walk[i]:
+                return i+1
+        return None
 
 class EvenRule(Rule):
     def __init__(self, evens):
         self.evens = evens
-        
+    
     def apply(self, graph, walk):
         walk = [int(item) for item in walk]
         for i, v in enumerate(walk):
@@ -87,11 +99,17 @@ class EvenRule(Rule):
                 if any(walk[j] % 2 != 0 for j in range(i+1, len(walk))):
                     return False
         return True
+    
+    def get_violation_position(self, graph, walk):
+        for i in range(len(walk) - 1):
+            if walk[i] in self.evens and walk[i+1] % 2 != 0:
+                return i+1
+        return None
 
 class OddRule(Rule):
     def __init__(self, odds):
         self.odds = odds
-
+    
     def apply(self, graph, walk):
         walk = [int(item) for item in walk]
         for i, v in enumerate(walk):
@@ -99,6 +117,12 @@ class OddRule(Rule):
                 if any(walk[j] % 2 == 0 for j in range(i+1, len(walk))):
                     return False
         return True
+    
+    def get_violation_position(self, graph, walk):
+        for i in range(len(walk) - 1):
+            if walk[i] in self.odds and walk[i+1] % 2 == 0:
+                return i+1
+        return None
 
 class EdgeExistenceRule(Rule):
     def apply(self, walk, graph):
@@ -110,7 +134,7 @@ class EdgeExistenceRule(Rule):
 class RepeaterRule(Rule):
     def __init__(self, repeaters):
         self.repeaters = repeaters
-
+    
     def apply(self, graph, walk):
         walk = [int(item) for item in walk]
         for v, k in self.repeaters.items():
@@ -120,6 +144,15 @@ class RepeaterRule(Rule):
                     if indices[i+1] - indices[i] != k:
                         return False
         return True
+    
+    def get_violation_position(self, graph, walk):
+        for v, k in self.repeaters.items():
+            if v in walk:
+                indices = [i for i, x in enumerate(walk) if x == v]
+                for i in range(len(indices) - 1):
+                    if indices[i+1] - indices[i] != k:
+                        return indices[i+1]
+        return None
 
 def define_repeaters(graph, num_repeaters, min_steps, max_steps):
     """
