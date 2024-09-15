@@ -157,6 +157,7 @@ class RepeaterRule(Rule):
 def define_repeaters(graph, num_repeaters, min_steps, max_steps):
     """
     Randomly select vertices and their corresponding number of steps for the repeater rule.
+    Add k-1 edges to form a loop starting and stopping at the repeater vertex.
     """
     repeaters = {}
     vertices = list(graph.nodes())
@@ -165,9 +166,15 @@ def define_repeaters(graph, num_repeaters, min_steps, max_steps):
         vertex = random.choice(vertices)
         steps = random.randint(min_steps, max_steps)
         
-        # Check if a cycle of length `steps` exists that includes the vertex
-        if has_cycle_of_length(graph, vertex, steps):
-            repeaters[vertex] = steps
+        # Add k-1 edges to form a loop starting and stopping at the repeater vertex
+        loop_vertices = random.sample(vertices, steps - 1)
+        loop_vertices.insert(0, vertex)
+        loop_vertices.append(vertex)
+        
+        for i in range(len(loop_vertices) - 1):
+            graph.add_edge(loop_vertices[i], loop_vertices[i + 1])
+        
+        repeaters[vertex] = steps
     
     return repeaters
 
