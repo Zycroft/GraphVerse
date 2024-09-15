@@ -1,5 +1,5 @@
-from ..graph.walk import check_rule_compliance
-from .token_generation import seed_walk
+from ..graph.walk import check_rule_compliance, generate_valid_walk
+
 import random
 import torch
 
