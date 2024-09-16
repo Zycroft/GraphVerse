@@ -3,36 +3,38 @@ import math
 import random
 
 
-def generate_random_graph(n):
-    # Calculate the desired edge density
-    edge_density = math.log(n) / n
-
-    # Calculate the number of edges based on the density
-    num_edges = int(edge_density * n * (n - 1))
-
+def generate_random_graph(n, num_in_edges, num_out_edges):
     # Create a directed graph
     G = nx.DiGraph()
 
     # Add nodes
     G.add_nodes_from(range(n))
 
-    # Add random edges
-    edges = []
-    while len(edges) < num_edges:
+    # Add edges ensuring minimum in/out degree
+    for u in range(n):
+        in_neighbors = set()
+        out_neighbors = set()
+        while len(in_neighbors) < num_in_edges:
+            v = random.randint(0, n-1)
+            if v != u and (v, u) not in G.edges():
+                G.add_edge(v, u)
+                in_neighbors.add(v)
+        while len(out_neighbors) < num_out_edges:
+            v = random.randint(0, n-1)
+            if v != u and (u, v) not in G.edges():
+                G.add_edge(u, v)
+                out_neighbors.add(v)
+
+    # Ensure there exists a walk between any two vertices - incredibly silly method but it works
+    while not nx.is_strongly_connected(G):
         u = random.randint(0, n-1)
         v = random.randint(0, n-1)
-        if u != v and (u, v) not in edges:
-            edges.append((u, v))
-
-    G.add_edges_from(edges)
-
-    # Ensure the graph is connected
-    if not nx.is_strongly_connected(G):
-        components = list(nx.strongly_connected_components(G))
-        for i in range(len(components) - 1):
-            u = random.choice(list(components[i]))
-            v = random.choice(list(components[i+1]))
-            G.add_edge(u, v)
+        if not nx.has_path(G, u, v):
+            path = random.sample(range(n), n//2)
+            for i in range(len(path)-1):
+                G.add_edge(path[i], path[i+1])  
+            G.add_edge(u, path[0])
+            G.add_edge(path[-1], v)
 
     # Assign random probability distributions to outgoing edges
     for node in G.nodes():

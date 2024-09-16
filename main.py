@@ -3,151 +3,108 @@ import matplotlib.pyplot as plt
 import torch
 import pandas as pd
 import math
-import sys
 import random
 
 from graphverse.graph.graph_generation import generate_random_graph, calculate_edge_density
-from graphverse.graph.rules import AscenderRule, DescenderRule, EvenRule, OddRule
-from graphverse.graph.rules import define_ascenders, define_descenders, define_evens_odds
+from graphverse.graph.rules import AscenderRule, DescenderRule, EvenRule, OddRule, RepeaterRule
+from graphverse.graph.rules import define_all_rules
 from graphverse.data.preparation import prepare_training_data
 from graphverse.llm.training import train_model
 from graphverse.llm.evaluation import evaluate_model
 
+# Generate graph
+n = 1000  # Number of vertices
+in_edges = 100  # inital number of edges each vertex should have
+out_edges = 100  # '' out edges
+G = generate_random_graph(n, in_edges, out_edges)
 
-def main(arg1=None):
-    # Generate graph
-    n = 10  # Number of vertices
-    c = 1.5   # Constant factor
-    G = generate_random_graph(n)
+print(f'graph created')
 
-    # Print some information about the graph
-    print(f"Number of nodes: {G.number_of_nodes()}")
-    print(f"Number of edges: {G.number_of_edges()}")
-    print(f"Is strongly connected: {nx.is_strongly_connected(G)}")
-    print(f"Is wealky connected: {nx.is_weakly_connected(G)}")
+# Print some information about the graph
+print(f"Number of nodes: {G.number_of_nodes()}")
+print(f"Number of edges: {G.number_of_edges()}")
+print(f"Is strongly connected: {nx.is_strongly_connected(G)}")
+print(f"Is wealkly connected: {nx.is_weakly_connected(G)}")
 
-    # Print the probability distribution for a few nodes
-    for node in range(min(5, n)):
-        print(f"\nProbability distribution for node {node}:")
-    for u, v, data in G.out_edges(node, data=True):
-        print(f"  Edge ({u}, {v}): {data['probability']:.4f}")
+# Define rule sets
+print('selecting vertices with rules')
+ascenders, descenders, evens, odds, repeaters = define_all_rules(
+    G, n, 3, 10, 100)
 
-    # Define rule sets
-    ascenders = define_ascenders(G, n)
-    descenders = define_descenders(G, n)
-    evens, odds = define_evens_odds(G, n)
+# print all rule se
+# Create rule tuple
+rules = (
+    AscenderRule(ascenders),
+    DescenderRule(descenders),
+    EvenRule(evens),
+    OddRule(odds),
+    RepeaterRule(repeaters)
+)
+print(f'Now preparing training data')
 
-    # Create rule tuple
-    rules = (
-        AscenderRule(ascenders),
-        DescenderRule(descenders),
-        EvenRule(evens),
-        OddRule(odds)
-    )
+# Prepare training data
+training_data, vocab = prepare_training_data(
+    G, num_samples=100_000, min_length=10, max_length=50, rules=rules)
+print(f'Training data prepared')
+print(f'Vocab size: {len(vocab)}')
+print(f'Training data shape: {training_data.shape}')
+print(f'Begin training')
 
-    # Prepare training data
-    training_data, vocab = prepare_training_data(
-        G, num_samples=1000, min_length=10, max_length=50, rules=rules)
+# Train the model
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = train_model(training_data, vocab, epochs=1,
+                    batch_size=32, learning_rate=0.001, device=device)
 
-    # Train the model
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = train_model(training_data, vocab, epochs=1,
-                        batch_size=32, learning_rate=0.001, device=device)
+# Evaluate the model
+max_corpus_length = training_data.size(1)  # Get the maximum sequence length
+evaluation_results = evaluate_model(model, G, vocab, num_samples=10000,
+                                    min_start_length=1, max_start_length=int(0.1 * max_corpus_length), rules=rules)
 
-    # Evaluate the model
-    max_corpus_length = training_data.size(
-        1)  # Get the maximum sequence length
-    evaluation_results = evaluate_model(model, G, vocab, num_samples=10000,
-                                        min_start_length=1, max_start_length=int(0.1 * max_corpus_length), rules=rules)
+# Analyze results
+df_results = pd.DataFrame(evaluation_results)
 
-    # Analyze results
-    df_results = pd.DataFrame(evaluation_results)
+# Calculate average rule violations per rule type
+rule_violations_per_type = df_results['rule_violations'].apply(
+    pd.Series).stack().apply(pd.Series)['rule_type'].value_counts()
+total_violations = rule_violations_per_type.sum()
+avg_violations_per_type = rule_violations_per_type / total_violations
 
-    print("\nEvaluation Results:")
-    print(
-        f"Average rule violations: {df_results['rule_violations'].mean():.2f}")
-    print(
-        f"Average generated walk length: {df_results['generated_length'].mean():.2f}")
+print("\nEvaluation Results:")
+print(f"Total rule violations: {total_violations}")
+print("Average rule violations per rule type:")
+for rule_type, avg_violations in avg_violations_per_type.items():
+    print(f"{rule_type}: {avg_violations:.2%}")
 
-    # Optional: Save results to a CSV file
-    df_results.to_csv('evaluation_results.csv', index=False)
-    print("Detailed results saved to 'evaluation_results.csv'")
+# Calculate average walk length and violation position
+df_violations = pd.json_normalize(df_results['rule_violations'].explode())
+avg_walk_length = df_violations['walk_length'].mean()
+avg_violation_position = df_violations['violation_position'].mean()
 
+print(f"\nAverage walk length: {avg_walk_length:.2f}")
+print(f"Average violation position: {avg_violation_position:.2f}")
 
-def main2(arg1=None):
-    # Draw the graph
-    if arg1 == 'draw':
-        G = load_graph('my_graph.gml')
-        visualize_graph(G)
-        # graph_draw(G)
-        return
-    # Generate graph
-    n = 1000  # Number of vertices  #MDW changed from 1000 to 10
-    c = 1.5   # Constant factor
-    G = generate_random_graph(n)
+# Analyze rule violations by walk length
+walk_length_bins = [0, 10, 20, 30, 40, 50, math.inf]
+walk_length_labels = ['1-10', '11-20', '21-30', '31-40', '41-50', '50+']
+df_violations['walk_length_bin'] = pd.cut(
+    df_violations['walk_length'], bins=walk_length_bins, labels=walk_length_labels)
+violations_by_walk_length = df_violations.groupby('walk_length_bin').size()
 
-    # Save the graph to a file
-    save_graph(G, 'my_graph.gml')
-    # Print some information about the graph
-    print(f"Number of nodes: {G.number_of_nodes()}")
-    print(f"Number of edges: {G.number_of_edges()}")
-    print(f"Is strongly connected: {nx.is_strongly_connected(G)}")
-    print(f"Is wealky connected: {nx.is_weakly_connected(G)}")
+print("\nRule violations by walk length:")
+for walk_length_bin, count in violations_by_walk_length.items():
+    print(f"{walk_length_bin}: {count}")
 
-    # Print the probability distribution for a few nodes
-    for node in range(min(5, n)):
-        print(f"\nProbability distribution for node {node}:")
-    for u, v, data in G.out_edges(node, data=True):
-        print(f"  Edge ({u}, {v}): {data['probability']:.4f}")
+# Analyze rule violations by violation position
+position_bins = [0, 10, 20, 30, 40, 50, math.inf]
+position_labels = ['1-10', '11-20', '21-30', '31-40', '41-50', '50+']
+df_violations['position_bin'] = pd.cut(
+    df_violations['violation_position'], bins=position_bins, labels=position_labels)
+violations_by_position = df_violations.groupby('position_bin').size()
 
-    # Define rule sets
-    ascenders = define_ascenders(G, n)
-    descenders = define_descenders(G, n)
-    evens, odds = define_evens_odds(G, n)
+print("\nRule violations by violation position:")
+for position_bin, count in violations_by_position.items():
+    print(f"{position_bin}: {count}")
 
-    # Create rule tuple
-    rules = (
-        AscenderRule(ascenders),
-        DescenderRule(descenders),
-        EvenRule(evens),
-        OddRule(odds)
-    )
-
-    # Prepare training data
-    training_data, vocab = prepare_training_data(
-        G, num_samples=100, min_length=10, max_length=50, rules=rules)  # MDW changed num_samples from 10000 to 100
-
-    # Train the model
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = train_model(training_data, vocab, epochs=10,
-                        batch_size=32, learning_rate=0.001, device=device)
-
-    # Evaluate the model
-    max_corpus_length = training_data.size(
-        1)  # Get the maximum sequence length
-    evaluation_results = evaluate_model(model, G, vocab, num_samples=1000,
-                                        min_start_length=1, max_start_length=int(0.1 * max_corpus_length),
-                                        ascenders=ascenders, descenders=descenders, evens=evens, odds=odds)
-
-    # Analyze results
-    df_results = pd.DataFrame(evaluation_results)
-
-    print("\nEvaluation Results:")
-    print(
-        f"Average rule violations: {df_results['rule_violations'].mean():.2f}")
-    print(
-        f"Average generated walk length: {df_results['generated_length'].mean():.2f}")
-
-    # Optional: Save results to a CSV file
-    df_results.to_csv('evaluation_results.csv', index=False)
-    print("Detailed results saved to 'evaluation_results.csv'")
-
-    # Run the main function
-if __name__ == '__main__':
-    print('argument list', sys.argv)
-    if len(sys.argv) > 1:
-        arg1 = sys.argv[1]
-    else:
-        arg1 = None
-
-    main(arg1)
+# Optional: Save results to a CSV file
+df_results.to_csv('evaluation_results.csv', index=False)
+print("\nDetailed results saved to 'evaluation_results.csv'")
